@@ -1,0 +1,168 @@
+```html id="ecoexam6"
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Examen Deterioro Ambiental</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    color: #1b5e20;
+    text-align: center;
+}
+
+.container {
+    max-width: 850px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+h1 { color: #2e7d32; }
+
+input {
+    padding: 10px;
+    width: 80%;
+    border-radius: 8px;
+    border: 1px solid #a5d6a7;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #43a047;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover { background: #2e7d32; }
+
+.question { text-align: left; margin-top: 20px; }
+
+.timer { font-size: 20px; margin-bottom: 15px; }
+
+.hidden { display:none; }
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🌍 Examen: Deterioro Ambiental</h1>
+
+<div id="inicio">
+<input type="text" id="nombre" placeholder="Nombre"><br><br>
+<input type="text" id="cuenta" placeholder="Número de cuenta"><br><br>
+<button onclick="iniciar()">Comenzar</button>
+</div>
+
+<div id="quiz" class="hidden">
+<div class="timer" id="timer">01:05</div>
+<form id="formulario"></form>
+</div>
+
+<div id="resultado" class="hidden">
+<h2>Resultado</h2>
+<p id="calificacion"></p>
+<button onclick="descargarPDF()">Descargar PDF</button>
+</div>
+
+</div>
+
+<script>
+const preguntas = [
+{q:"El deterioro ambiental es:",o:["Mejora del ambiente","Daño al entorno","Proceso natural positivo","Equilibrio ecológico"],a:1},
+{q:"La contaminación atmosférica afecta:",o:["Suelo","Aire","Agua","Plantas"],a:1},
+{q:"El CO2 es un:",o:["Metal","Gas contaminante","Sólido","Líquido"],a:1},
+{q:"El CO es peligroso porque:",o:["No afecta","Es tóxico","Es nutritivo","Es agua"],a:1},
+{q:"Las partículas PM2.5 son:",o:["Grandes","Pequeñas y peligrosas","Inofensivas","Agua"],a:1},
+{q:"Fuente de contaminación del aire:",o:["Fotosíntesis","Vehículos","Plantas","Agua"],a:1},
+{q:"La lluvia ácida se produce por:",o:["Agua limpia","Contaminantes","Sol","Viento"],a:1},
+{q:"El calentamiento global es consecuencia de:",o:["Agua","Contaminación","Plantas","Suelo"],a:1},
+{q:"Contaminación del agua afecta:",o:["Aire","Organismos acuáticos","Sol","Viento"],a:1},
+{q:"Un contaminante del agua es:",o:["Oxígeno","Plástico","Luz","Calor"],a:1},
+
+{q:"Metales pesados incluyen:",o:["Agua","Mercurio","Oxígeno","Hidrógeno"],a:1},
+{q:"Eutrofización causa:",o:["Agua limpia","Exceso nutrientes","Sequía","Frío"],a:1},
+{q:"Fuentes de contaminación del agua:",o:["Industria","Fotosíntesis","Luz","Viento"],a:0},
+{q:"El agua contaminada provoca:",o:["Salud","Enfermedades","Vida","Equilibrio"],a:1},
+{q:"Contaminación del suelo afecta:",o:["Solo aire","Fertilidad","Clima","Sol"],a:1},
+{q:"Uso excesivo de pesticidas:",o:["Mejora suelo","Contamina suelo","No afecta","Produce agua"],a:1},
+{q:"Residuos sólidos son:",o:["Agua","Basura","Aire","Sol"],a:1},
+{q:"Derrames de petróleo afectan:",o:["Aire","Suelo","Sol","Clima"],a:1},
+{q:"La desertificación es:",o:["Fertilidad","Pérdida suelo","Agua","Clima"],a:1},
+{q:"Contaminación del suelo provoca:",o:["Más plantas","Menos fertilidad","Más agua","Más aire"],a:1},
+
+{q:"La biodiversidad disminuye por:",o:["Cuidado","Contaminación","Fotosíntesis","Luz"],a:1},
+{q:"Cambio climático es:",o:["Natural","Alteración clima","Agua","Suelo"],a:1},
+{q:"Salud humana se afecta por:",o:["Ambiente limpio","Contaminación","Agua pura","Plantas"],a:1},
+{q:"Energías renovables ayudan a:",o:["Contaminar","Reducir daño","Aumentar basura","Eliminar agua"],a:1},
+{q:"Reciclaje permite:",o:["Contaminar","Reutilizar","Destruir","Quemar"],a:1},
+{q:"Tratamiento de aguas:",o:["Contamina","Limpia","Calienta","Enfría"],a:1},
+{q:"Educación ambiental busca:",o:["Ignorar","Conciencia","Contaminar","Destruir"],a:1},
+{q:"Reducir emisiones ayuda a:",o:["Aumentar daño","Disminuir contaminación","Eliminar agua","Quitar plantas"],a:1},
+{q:"El aire limpio es importante para:",o:["Nada","Salud","Basura","Suelo"],a:1},
+{q:"El deterioro ambiental es causado principalmente por:",o:["Animales","Humanos","Plantas","Agua"],a:1}
+];
+
+let actual=0,respuestas=[],tiempo=65,intervalo;
+
+function iniciar(){
+document.getElementById("inicio").classList.add("hidden");
+document.getElementById("quiz").classList.remove("hidden");
+mostrar();
+}
+
+function mostrar(){
+if(actual>=preguntas.length){fin();return;}
+let p=preguntas[actual];
+let html="<div class='question'><h3>"+(actual+1)+". "+p.q+"</h3>";
+p.o.forEach((op,i)=>{
+html+=`<label><input type="radio" name="r" value="${i}"> ${op}</label><br>`;
+});
+html+="<button type='button' onclick='sig()'>Siguiente</button></div>";
+document.getElementById("formulario").innerHTML=html;
+
+tiempo=65;
+clearInterval(intervalo);
+intervalo=setInterval(()=>{
+tiempo--;
+let m=Math.floor(tiempo/60),s=tiempo%60;
+document.getElementById("timer").innerText=
+(m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+if(tiempo<=0) sig();
+},1000);
+}
+
+function sig(){
+let sel=document.querySelector('input[name="r"]:checked');
+respuestas.push(sel?parseInt(sel.value):-1);
+actual++;mostrar();
+}
+
+function fin(){
+clearInterval(intervalo);
+document.getElementById("quiz").classList.add("hidden");
+document.getElementById("resultado").classList.remove("hidden");
+
+let c=0;
+preguntas.forEach((p,i)=>{if(p.a===respuestas[i])c++;});
+let cal=(c/preguntas.length)*10;
+document.getElementById("calificacion").innerText=
+"Calificación: "+cal.toFixed(2)+" / 10";
+}
+
+function descargarPDF(){window.print();}
+</script>
+
+</body>
+</html>
+```
